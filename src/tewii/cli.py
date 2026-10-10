@@ -1,6 +1,6 @@
 import click
 
-from tewii.core import init_project
+from tewii.core import edit_project, init_project
 
 
 @click.group(add_help_option=False)
@@ -20,4 +20,14 @@ def init(name: str) -> None:
         click.echo(init_project(name))
     except Exception as e:
         # TODO: make better
-        click.secho(f"{e}")
+        click.secho(f"Error: {e}")
+
+
+@main.command(help="Edit an existing project")
+@click.argument("name", help="The name of the project")
+def edit(name: str) -> None:
+    try:
+        click.echo(edit_project(name))
+    except Exception as e:
+        # TODO: make better
+        click.secho(f"Error: {e}")
