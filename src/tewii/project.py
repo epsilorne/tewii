@@ -1,15 +1,20 @@
 import json
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass, field
 
 
 @dataclass
 class Project:
-    name: str
-    source_files: list[str]
+    """
+    Stores information about a project.
 
-    def __init__(self, name: str, source_files: list[str] = ["document.md"]) -> None:
-        self.name = name
-        self.source_files = source_files
+    Attributes:
+        name (str): The name of the project.
+        source_files (list[str]): A list of source files that Pandoc converts
+            into LaTeX. The first file in the list is also the one opened
+            when the project is edited.
+    """
+    name: str
+    source_files: list[str] = field(default_factory=lambda: ["document.md"])
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), indent=4)

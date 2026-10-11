@@ -22,3 +22,7 @@ build-backend = "uv_build"
 dev = [
     "ruff>=0.16.10",
 ]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

@@ -1,9 +1,18 @@
-from json import JSONDecodeError
 import os
-from pathlib import Path
 import subprocess
+from json import JSONDecodeError
+from pathlib import Path
+from textwrap import dedent
 
-from tewii.project import Project
+from .project import Project
+
+
+STARTER_FILES = {
+    "document.md": dedent("""\
+    # Starting Document
+    This is an example document written in Markdown, which will also be rendered into LaTeX!
+    """)
+}
 
 
 def init_project(project_name: str) -> str:
@@ -20,7 +29,10 @@ def init_project(project_name: str) -> str:
         with open(tewii_project_file, "w") as file:
             file.write(Project(project_path.name).to_json())
 
-        (project_path / "document.md").touch()
+        # Then, create all the starter files for the project
+        for name, contents in STARTER_FILES.items():
+            with open(project_path / name, "w") as file:
+                file.write(contents)
 
         return f"Initialised an empty Tewii project in {project_path.resolve()}"
 
@@ -35,7 +47,7 @@ def edit_project(project_name: str) -> str:
         with open(tewii_project_file, "r") as file:
             try:
                 current_project = Project.from_json(file.read())
-            except TypeError as e:
+            except TypeError:
                 raise RuntimeError(
                     f"{tewii_project_file.resolve()} is an invalid Tewii project file"
                 )

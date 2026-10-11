@@ -7,7 +7,7 @@ from tewii.core import edit_project, init_project
 @click.help_option("--help", "-h", help="Show this message and exit")
 def main():
     """
-    TODO: add a good description here
+    Tewii: A seamless Markdown to LaTeX & PDF experience
     """
     # Intentionally empty, since interaction is primarily through commands
     pass
