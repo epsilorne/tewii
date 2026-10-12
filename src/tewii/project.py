@@ -13,6 +13,7 @@ class Project:
             into LaTeX. The first file in the list is also the one opened
             when the project is edited.
     """
+
     name: str
     source_files: list[str] = field(default_factory=lambda: ["document.md"])
 

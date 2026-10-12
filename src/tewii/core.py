@@ -1,5 +1,7 @@
+import getpass
 import os
 import subprocess
+from datetime import date
 from json import JSONDecodeError
 from pathlib import Path
 from textwrap import dedent
@@ -7,15 +9,46 @@ from textwrap import dedent
 from .project import Project
 
 
-STARTER_FILES = {
-    "document.md": dedent("""\
-    # Starting Document
-    This is an example document written in Markdown, which will also be rendered into LaTeX!
-    """)
-}
+def initial_files(project_name: str) -> dict[str, str]:
+    """Return a dictionary of starting files to include in a project.
+
+    Each key is the file name, and each value is the file's contents. Note this
+    only supports *files*; directories are not supported.
+
+    Args:
+        project_name (str): The name of the project, which fills the doc's title
+    """
+    return {
+        "document.md": dedent(f"""\
+        ---
+        title: "{project_name}"
+        author: "{getpass.getuser()}"
+        date: "{date.today()}"
+        titlepage: true
+        documentclass: report
+        ---
+
+        # Starting Document
+        This is an example document written in Markdown, which will also be rendered into LaTeX!
+        """)
+    }
 
 
 def init_project(project_name: str) -> str:
+    """Initialise a new project, specified by the given name (which can also be
+    a path to somewhere).
+
+    This will create a directory for the project based on its name, a .tewii.json
+    to store project metadata, and any initial files required for the project.
+
+    Args:
+        project_name (str): The name of the project
+
+    Returns:
+        str: A message, determining success or failure (i.e. when a project or
+        directory with the same name already exists)
+
+    """
     project_path = Path(project_name)
     project_path.mkdir(parents=True, exist_ok=True)
 
@@ -30,7 +63,7 @@ def init_project(project_name: str) -> str:
             file.write(Project(project_path.name).to_json())
 
         # Then, create all the starter files for the project
-        for name, contents in STARTER_FILES.items():
+        for name, contents in initial_files(project_name).items():
             with open(project_path / name, "w") as file:
                 file.write(contents)
 
@@ -38,6 +71,20 @@ def init_project(project_name: str) -> str:
 
 
 def edit_project(project_name: str) -> str:
+    """Begin editing a project by opening its source file into the user's editor.
+
+    This function checks if the project exists (based on a .tewii.json file) and
+    if it does, reads the project metadata into memory and opens the first source
+    file into the user's preferred text editor.
+
+    Args:
+        project_name (str): The name of the project
+
+    Returns:
+        str: A message, determining success or failure (i.e. when a project does
+        not exist, or its .tewii.json is broken)
+
+    """
     project_path = Path(project_name)
     tewii_project_file = project_path / ".tewii.json"
 
