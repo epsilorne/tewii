@@ -1,5 +1,7 @@
-# tewii 🥕
-More doco TBA
+# Tewii 🥕
+Tewii is a Pandoc wrapper, allowing you to seamlessly create LaTeX (+ Rendered PDF) documents, using simpler Markdown.
+
+More doco TBA.
 
 ## Dependencies
 - `pandoc`
