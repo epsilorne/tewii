@@ -140,6 +140,6 @@ def edit_project(project_name: str) -> str:
                 observer.join()
 
             # TODO: git handling here
-            return "Ok"
+            return ""
     else:
         return f"A Tewii project does not exist at {project_path.resolve()}"
