@@ -6,10 +6,11 @@ from json import JSONDecodeError
 from pathlib import Path
 from textwrap import dedent
 
+import psutil
 from watchdog.observers import Observer
 
 from tewii.project import Project
-from tewii.workers import SourceFileMonitor
+from tewii.workers import SourceFileMonitor, open_pdf_previewer
 
 
 def initial_files(project_name: str) -> dict[str, str]:
@@ -127,6 +128,9 @@ def edit_project(project_name: str) -> str:
             )
             observer.start()
 
+            # Also create a background process to handle the pdf preview
+            open_pdf_previewer(current_project, project_path)
+
             try:
                 # TODO: needs to be OS-agnostic (e.g. for windows)
                 subprocess.run(
@@ -139,7 +143,12 @@ def edit_project(project_name: str) -> str:
                 observer.stop()
                 observer.join()
 
+                # Kill all child processes (including the .pdf viewer processes
+                # created by open_pdf()
+                for child in psutil.Process(os.getpid()).children(recursive=True):
+                    child.kill()
+
             # TODO: git handling here
-            return ""
+            return f"Saved changes to {project_path}"
     else:
         return f"A Tewii project does not exist at {project_path.resolve()}"

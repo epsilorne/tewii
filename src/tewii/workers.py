@@ -1,3 +1,5 @@
+import os
+import platform
 import subprocess
 from pathlib import Path
 
@@ -7,6 +9,20 @@ from watchdog.events import PatternMatchingEventHandler
 from tewii.project import Project
 
 PDFLATEX: str = "pdflatex"
+
+
+def open_pdf_previewer(project: Project, base_dir: Path) -> None:
+    """Opens the OS-native PDF viewer to preview the rendered project."""
+    pdf = base_dir.resolve() / f"{project.name}.pdf"
+
+    match platform.system():
+        case "Windows":
+            os.startfile(pdf)
+        # Use Popen instead of run because it's non-blocking
+        case "Darwin":
+            subprocess.Popen(["open", pdf], stdout=subprocess.DEVNULL)
+        case _:
+            subprocess.Popen(["xdg-open", pdf], stdout=subprocess.DEVNULL)
 
 
 class SourceFileMonitor(PatternMatchingEventHandler):
@@ -27,6 +43,7 @@ class SourceFileMonitor(PatternMatchingEventHandler):
 
     def __init__(self, project: Project, base_dir: Path):
         self.project = project
+        # No harm in double-resolving?
         self.base_dir = base_dir.resolve()
 
         # Build absolute paths to pass to the observer (but as strings since
