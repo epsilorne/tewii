@@ -12,7 +12,13 @@ PDFLATEX: str = "pdflatex"
 
 
 def open_pdf_previewer(project: Project, base_dir: Path) -> None:
-    """Opens the OS-native PDF viewer to preview the rendered project."""
+    """Opens the OS-native PDF viewer to preview the rendered project.
+
+    Args:
+        project (Project): The project whose source files will be previewed
+        base_dir (Path): an ABSOLUTE path to the project directory, which
+            is used to build a path to a .pdf
+    """
     pdf = base_dir.resolve() / f"{project.name}.pdf"
 
     match platform.system():

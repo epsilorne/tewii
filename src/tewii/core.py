@@ -53,13 +53,13 @@ def init_project(project_name: str) -> str:
         directory with the same name already exists)
 
     """
-    project_path = Path(project_name)
+    project_path = Path(project_name).resolve()
     project_path.mkdir(parents=True, exist_ok=True)
 
     tewii_project_file = project_path / ".tewii.json"
 
     if tewii_project_file.exists():
-        return f"A Tewii project already exists in {project_path.resolve()}"
+        return f"A Tewii project already exists in {project_path}"
     else:
         # For an empty project we need to create a template project file
         # for the editing command (and later the git repo)
@@ -71,7 +71,7 @@ def init_project(project_name: str) -> str:
             with open(project_path / name, "w") as file:
                 file.write(contents)
 
-        return f"Initialised an empty Tewii project in {project_path.resolve()}"
+        return f"Initialised an empty Tewii project in {project_path}"
 
 
 def edit_project(project_name: str) -> str:
@@ -89,7 +89,7 @@ def edit_project(project_name: str) -> str:
         not exist, or its .tewii.json is broken)
 
     """
-    project_path = Path(project_name)
+    project_path = Path(project_name).resolve()
     tewii_project_file = project_path / ".tewii.json"
 
     if tewii_project_file.exists():
@@ -100,12 +100,10 @@ def edit_project(project_name: str) -> str:
                 current_project = Project.from_json(file.read())
             except TypeError:
                 raise RuntimeError(
-                    f"{tewii_project_file.resolve()} is an invalid Tewii project file"
+                    f"{tewii_project_file} is an invalid Tewii project file"
                 )
             except JSONDecodeError:
-                raise RuntimeError(
-                    f"{tewii_project_file.resolve()} contains malformed JSON"
-                )
+                raise RuntimeError(f"{tewii_project_file} contains malformed JSON")
 
             # Find the first existing file in current_project.source_files
             source_file = next(
@@ -117,15 +115,13 @@ def edit_project(project_name: str) -> str:
                 None,
             )
             if source_file is None:
-                return f"Could not find any existing source files to edit. Check {tewii_project_file.resolve()} and try again"
+                return f"Could not find any existing source files to edit. Check {tewii_project_file} and try again"
 
             # Use a 'watchdog' to begin monitoring project source files for any
             # changes (which'll trigger Pandoc + Pdflatex to render)
-            file_monitor = SourceFileMonitor(current_project, project_path.resolve())
+            file_monitor = SourceFileMonitor(current_project, project_path)
             observer = Observer()
-            observer.schedule(
-                file_monitor, str(project_path.resolve()), recursive=False
-            )
+            observer.schedule(file_monitor, str(project_path), recursive=False)
             observer.start()
 
             # Also create a background process to handle the pdf preview
@@ -151,4 +147,4 @@ def edit_project(project_name: str) -> str:
             # TODO: git handling here
             return f"Saved changes to {project_path}"
     else:
-        return f"A Tewii project does not exist at {project_path.resolve()}"
+        return f"A Tewii project does not exist at {project_path}"
