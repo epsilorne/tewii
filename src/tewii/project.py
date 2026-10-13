@@ -9,9 +9,9 @@ class Project:
 
     Attributes:
         name (str): The name of the project.
-        source_files (list[str]): A list of source files that Pandoc converts
-            into LaTeX. The first file in the list is also the one opened
-            when the project is edited.
+        source_files (list[str]): A list of relative paths to source files
+            Pandoc converts into LaTeX. The first file in the list is also the
+            one opened when the project is edited.
     """
 
     name: str

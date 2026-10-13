@@ -6,7 +6,10 @@ from json import JSONDecodeError
 from pathlib import Path
 from textwrap import dedent
 
-from .project import Project
+from watchdog.observers import Observer
+
+from tewii.project import Project
+from tewii.workers import SourceFileMonitor
 
 
 def initial_files(project_name: str) -> dict[str, str]:
@@ -115,12 +118,26 @@ def edit_project(project_name: str) -> str:
             if source_file is None:
                 return f"Could not find any existing source files to edit. Check {tewii_project_file.resolve()} and try again"
 
-            # TODO: needs to be OS-agnostic (e.g. for windows)
-            subprocess.run(
-                [os.environ["EDITOR"], source_file],
-                check=True,
-                cwd=project_path,
+            # Use a 'watchdog' to begin monitoring project source files for any
+            # changes (which'll trigger Pandoc + Pdflatex to render)
+            file_monitor = SourceFileMonitor(current_project, project_path.resolve())
+            observer = Observer()
+            observer.schedule(
+                file_monitor, str(project_path.resolve()), recursive=False
             )
+            observer.start()
+
+            try:
+                # TODO: needs to be OS-agnostic (e.g. for windows)
+                subprocess.run(
+                    [os.environ["EDITOR"], source_file],
+                    check=True,
+                    cwd=project_path,
+                )
+
+            finally:
+                observer.stop()
+                observer.join()
 
             # TODO: git handling here
             return "Ok"
