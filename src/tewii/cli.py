@@ -19,8 +19,7 @@ def init(name: str) -> None:
     try:
         click.echo(init_project(name))
     except Exception as e:
-        # TODO: make better
-        click.secho(f"Error: {e}")
+        click.secho(f"Error: {e}", fg="red")
 
 
 @main.command(help="Edit an existing project")
@@ -29,5 +28,4 @@ def edit(name: str) -> None:
     try:
         click.echo(edit_project(name))
     except Exception as e:
-        # TODO: make better
-        click.secho(f"Error: {e}")
+        click.secho(f"Error: {e}", fg="red")

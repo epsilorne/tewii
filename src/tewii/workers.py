@@ -41,56 +41,37 @@ class SourceFileMonitor(PatternMatchingEventHandler):
         project (Project): The project whose source files will be monitored
         base_dir (Path): an ABSOLUTE path to the project directory, which
             is used to build absolute source file paths to monitor
-
     """
 
     project: Project
     base_dir: Path
 
-    def __init__(self, project: Project, base_dir: Path):
-        self.project = project
-        # No harm in double-resolving?
-        self.base_dir = base_dir.resolve()
+    # While the list itself isn't a list[Path], because it's constructed from a
+    # list[Path] it should still be fine
+    absolute_source_files: list[str]
 
-        # Build absolute paths to pass to the observer (but as strings since
-        # watchdog doesn't handle Paths)
-        absolute_source_files = list(
-            map(lambda file: str(base_dir / file), project.source_files)
-        )
-        super().__init__(
-            patterns=absolute_source_files,
-            ignore_directories=True,
-        )
+    def convert_source_files(self) -> None:
+        """Convert the project's .md source files into .tex and .pdf.
 
-        try:
-            pypandoc.get_pandoc_version()
-            subprocess.run([PDFLATEX, "--version"], stdout=subprocess.DEVNULL)
-        except OSError:
-            raise RuntimeError(
-                "Required dependencies 'pandoc' and/or 'pdflatex' are not installed"
-            )
-
-    def on_modified(self, event):
-        """Handles a source file being updated.
-
-        When a source file is updated, Pandoc and Pdflatex will be invoked to
-        generate its .tex and .pdf respectively.
+        When called, this function invokes both Pandoc and Pdflatex to parse the
+        source .md files and generate .tex and .pdf in the project base directory.
         """
-
-        # TODO: currently will only handle one source file!
-        # TODO: also want a proper way of keeping and logging any errors here
         tex_source_file = self.base_dir / f"{self.project.name}.tex"
 
+        # TODO: order of files is not preserved, maybe should just call pandoc
+        # directly instead of the wrapper?
         latex = pypandoc.convert_file(
-            Path(str(event.src_path)),
+            self.absolute_source_files,
             "tex",
             outputfile=tex_source_file,
             extra_args=["--standalone"],
         )
+
         subprocess.run(
             [
                 PDFLATEX,
-                "-interaction=nonstopmode",  # Ignore any errors in the output pdf
+                # Ignore any errors in the output pdf
+                "-interaction=nonstopmode",
                 f"-output-directory={self.base_dir}",
                 tex_source_file,
             ],
@@ -98,3 +79,37 @@ class SourceFileMonitor(PatternMatchingEventHandler):
             text=True,
             stdout=subprocess.DEVNULL,
         )
+
+    def __init__(self, project: Project, base_dir: Path) -> None:
+        self.project = project
+        # No harm in double-resolving?
+        self.base_dir = base_dir.resolve()
+
+        # Build absolute paths to pass to the observer (but as strings since
+        # watchdog doesn't handle Paths)
+        self.absolute_source_files = list(
+            map(lambda file: str(base_dir / file), project.source_files)
+        )
+        super().__init__(
+            patterns=self.absolute_source_files,
+            ignore_directories=True,
+        )
+
+        try:
+            pypandoc.get_pandoc_version()
+            subprocess.run([PDFLATEX, "--version"], stdout=subprocess.DEVNULL)
+
+            # Ensures a .pdf exists so the viewer can open
+            self.convert_source_files()
+        except OSError:
+            raise RuntimeError(
+                "Required dependencies 'pandoc' and/or 'pdflatex' are not installed"
+            )
+
+    def on_modified(self, event) -> None:
+        """Handles a source file being updated.
+
+        When a source file is updated, Pandoc and Pdflatex will be invoked to
+        generate its .tex and .pdf respectively.
+        """
+        self.convert_source_files()

@@ -124,6 +124,9 @@ def edit_project(project_name: str) -> str:
             observer.schedule(file_monitor, str(project_path), recursive=False)
             observer.start()
 
+            # TODO: have another watchdog to monitor the project file, and if it
+            # updates, update/recreate the current_project accordingly
+
             # Also create a background process to handle the pdf preview
             open_pdf_previewer(current_project, project_path)
 
