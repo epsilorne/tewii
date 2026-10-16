@@ -1,5 +1,5 @@
 # Tewii 🥕
-Tewii is a Pandoc wrapper, allowing you to seamlessly create LaTeX (+ Rendered PDF) documents, using simpler Markdown.
+Tewii is a Pandoc wrapper surrounding your default text editor, allowing you to seamlessly create LaTeX (+ Rendered PDF) documents from simpler Markdown.
 
 More doco TBA.
 

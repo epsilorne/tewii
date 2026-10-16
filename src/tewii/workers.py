@@ -1,6 +1,6 @@
 import os
-import platform
 import subprocess
+import sys
 from pathlib import Path
 
 import pypandoc
@@ -21,11 +21,11 @@ def open_pdf_previewer(project: Project, base_dir: Path) -> None:
     """
     pdf = base_dir.resolve() / f"{project.name}.pdf"
 
-    match platform.system():
-        case "Windows":
+    match sys.platform:
+        case "win32":
             os.startfile(pdf)
         # Use Popen instead of run because it's non-blocking
-        case "Darwin":
+        case "darwin":
             subprocess.Popen(["open", pdf], stdout=subprocess.DEVNULL)
         case _:
             subprocess.Popen(["xdg-open", pdf], stdout=subprocess.DEVNULL)

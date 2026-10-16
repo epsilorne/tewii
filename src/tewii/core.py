@@ -1,6 +1,7 @@
 import getpass
 import os
 import subprocess
+import sys
 from datetime import date
 from json import JSONDecodeError
 from pathlib import Path
@@ -108,7 +109,7 @@ def edit_project(project_name: str) -> str:
             # Find the first existing file in current_project.source_files
             source_file = next(
                 (
-                    file
+                    (project_path / file)
                     for file in current_project.source_files
                     if (project_path / file).exists()
                 ),
@@ -130,14 +131,28 @@ def edit_project(project_name: str) -> str:
             # Also create a background process to handle the pdf preview
             open_pdf_previewer(current_project, project_path)
 
+            # Try EDITOR env var (for Unix), otherwise fallback to OS-defaults
             try:
-                # TODO: needs to be OS-agnostic (e.g. for windows)
-                subprocess.run(
-                    [os.environ["EDITOR"], source_file],
-                    check=True,
-                    cwd=project_path,
-                )
-
+                if editor := os.environ["EDITOR"]:
+                    subprocess.run([editor, source_file], cwd=project_path, check=True)
+                else:
+                    match sys.platform:
+                        case "win32":
+                            os.startfile(source_file)
+                        case "darwin":
+                            subprocess.run(
+                                ["open", "-t", source_file],
+                                stdout=subprocess.DEVNULL,
+                                check=True,
+                            )
+                        case _:
+                            subprocess.run(
+                                ["xdg-open", source_file],
+                                stdout=subprocess.DEVNULL,
+                                check=True,
+                            )
+            except Exception:
+                raise RuntimeError("Unable to open an editor")
             finally:
                 observer.stop()
                 observer.join()
