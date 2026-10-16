@@ -95,16 +95,7 @@ class SourceFileMonitor(PatternMatchingEventHandler):
             ignore_directories=True,
         )
 
-        try:
-            pypandoc.get_pandoc_version()
-            subprocess.run([PDFLATEX, "--version"], stdout=subprocess.DEVNULL)
-
-            # Ensures a .pdf exists so the viewer can open
-            self.convert_source_files()
-        except OSError:
-            raise RuntimeError(
-                "Required dependencies 'pandoc' and/or 'pdflatex' are not installed"
-            )
+        self.convert_source_files()
 
     def on_modified(self, event) -> None:
         """Handles a source file being updated.

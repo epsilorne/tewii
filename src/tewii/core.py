@@ -8,10 +8,31 @@ from pathlib import Path
 from textwrap import dedent
 
 import psutil
+import pypandoc
 from watchdog.observers import Observer
 
 from tewii.project import Project
 from tewii.workers import SourceFileMonitor, open_pdf_previewer
+
+
+def check_deps() -> bool:
+    """Checks if the runtime dependencies are installed.
+
+    Return:
+        bool: True if all required dependencies are installed
+
+    Raises:
+        RuntimeError: If the required dependencies are not installed
+    """
+    try:
+        pypandoc.get_pandoc_version()
+        subprocess.run(["pdflatex", "--version"], stdout=subprocess.DEVNULL)
+
+        return True
+    except OSError:
+        raise RuntimeError(
+            "Required dependencies 'pandoc' and/or 'pdflatex' are not installed"
+        )
 
 
 def initial_files(project_name: str) -> dict[str, str]:
@@ -116,7 +137,10 @@ def edit_project(project_name: str) -> str:
                 None,
             )
             if source_file is None:
-                return f"Could not find any existing source files to edit. Check {tewii_project_file} and try again"
+                raise RuntimeError(
+                    f"Could not find any existing source files to edit. Check {tewii_project_file} and try again"
+                )
+            check_deps()
 
             # Use a 'watchdog' to begin monitoring project source files for any
             # changes (which'll trigger Pandoc + Pdflatex to render)
