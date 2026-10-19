@@ -1,12 +1,12 @@
 [project]
 name = "tewii"
 version = "0.1.0"
-description = "Add your description here"
+description = "Seamless Markdown to LaTeX + PDF Convertor"
 readme = "README.md"
 authors = [
     { name = "epsilorne", email = "32991333+epsilorne@users.noreply.github.com" }
 ]
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 dependencies = [
     "click>=8.5.0",
     "psutil>=7.2.2",
