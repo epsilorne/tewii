@@ -60,7 +60,7 @@ class SourceFileMonitor(PatternMatchingEventHandler):
 
         # TODO: order of files is not preserved, maybe should just call pandoc
         # directly instead of the wrapper?
-        latex = pypandoc.convert_file(
+        pypandoc.convert_file(
             self.absolute_source_files,
             "tex",
             outputfile=tex_source_file,
@@ -75,9 +75,8 @@ class SourceFileMonitor(PatternMatchingEventHandler):
                 f"-output-directory={self.base_dir}",
                 tex_source_file,
             ],
-            input=latex,
-            text=True,
             stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
 
     def __init__(self, project: Project, base_dir: Path) -> None:
