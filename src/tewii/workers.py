@@ -1,10 +1,9 @@
-import click
-
 import os
 import subprocess
 import sys
 from pathlib import Path
 
+import click
 import pypandoc
 from watchdog.events import PatternMatchingEventHandler
 

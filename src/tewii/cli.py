@@ -1,4 +1,5 @@
 import sys
+
 import click
 
 from tewii.core import edit_project, init_project
