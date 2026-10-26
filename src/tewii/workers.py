@@ -1,3 +1,5 @@
+import click
+
 import os
 import subprocess
 import sys
@@ -60,24 +62,30 @@ class SourceFileMonitor(PatternMatchingEventHandler):
 
         # TODO: order of files is not preserved, maybe should just call pandoc
         # directly instead of the wrapper?
-        pypandoc.convert_file(
-            self.absolute_source_files,
-            "tex",
-            outputfile=tex_source_file,
-            extra_args=["--standalone"],
-        )
+        try:
+            pypandoc.convert_file(
+                self.absolute_source_files,
+                "tex",
+                outputfile=tex_source_file,
+                extra_args=["--standalone"],
+            )
 
-        subprocess.run(
-            [
-                PDFLATEX,
-                # Ignore any errors in the output pdf
-                "-interaction=nonstopmode",
-                f"-output-directory={self.base_dir}",
-                tex_source_file,
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+            subprocess.run(
+                [
+                    PDFLATEX,
+                    # Ignore any errors in the output pdf
+                    "-interaction=nonstopmode",
+                    f"-output-directory={self.base_dir}",
+                    tex_source_file,
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except (RuntimeError, OSError) as e:
+            # TODO: right now we just log errors to stderr if running as CLI,
+            # but in the future it should use the OS' notification system instead
+            if click.get_current_context(silent=True):
+                click.secho(f"Runtime Error: {e}", fg="red", file=sys.stderr)
 
     def __init__(self, project: Project, base_dir: Path) -> None:
         self.project = project
