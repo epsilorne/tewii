@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Seamless Markdown to LaTeX + PDF Convertor"
 readme = "README.md"
 authors = [
-    { name = "epsilorne", email = "32991333+epsilorne@users.noreply.github.com" }
+    { name = "epsilorne", email = "contact@epsilorne.moe" }
 ]
 requires-python = ">=3.14"
 dependencies = [
