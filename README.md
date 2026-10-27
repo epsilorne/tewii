@@ -1,8 +1,6 @@
 # 🥕 Tewii 
 
 [![PyPI](https://img.shields.io/pypi/v/tewii)](https://pypi.org/project/tewii/)
-[![Python versions](https://img.shields.io/pypi/pyversions/tewii)](https://pypi.org/project/tewii/)
-[![License](https://img.shields.io/pypi/l/tewii)](https://pypi.org/project/tewii/)
 [![CI](https://github.com/epsilorne/tewii/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/epsilorne/tewii/actions/workflows/build-and-test.yml)
 
 Tewii is a Pandoc wrapper surrounding your default text editor, allowing you to seamlessly create LaTeX documents, rendered as a PDF, all from simpler Markdown.

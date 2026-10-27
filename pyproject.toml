@@ -13,6 +13,7 @@ dependencies = [
     "pypandoc>=1.17",
     "watchdog>=6.0.0",
 ]
+license-files = ["LICENSE"]
 
 [project.scripts]
 tewii = "tewii.cli:main"
