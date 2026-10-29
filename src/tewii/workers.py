@@ -5,11 +5,19 @@ from pathlib import Path
 
 import click
 import pypandoc
+from notifypy import Notify
 from watchdog.events import PatternMatchingEventHandler
 
 from tewii.project import Project
 
 PDFLATEX: str = "pdflatex"
+
+
+def send_notification(message: str) -> None:
+    notification = Notify()
+    notification.title = "Tewii"
+    notification.message = message
+    notification.send()
 
 
 def open_pdf_previewer(project: Project, base_dir: Path) -> None:
@@ -81,9 +89,9 @@ class SourceFileMonitor(PatternMatchingEventHandler):
                 stderr=subprocess.DEVNULL,
             )
         except (RuntimeError, OSError) as e:
-            # TODO: right now we just log errors to stderr if running as CLI,
-            # but in the future it should use the OS' notification system instead
             if click.get_current_context(silent=True):
+                # TODO: find a way to summarise the error?
+                send_notification(str(e))
                 click.secho(f"Runtime Error: {e}", fg="red", file=sys.stderr)
 
     def __init__(self, project: Project, base_dir: Path) -> None:

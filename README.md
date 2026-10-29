@@ -27,7 +27,7 @@ Alternatively, you can build from source using e.g. [UV](https://github.com/astr
 ```bash
 $ git clone https://github.com/epsilorne/tewii.git
 $ cd tewii
-$ uv install .
+$ uv tool install .
 ```
 
 ## Usage
