@@ -73,6 +73,8 @@ def convert_source_files(
         subprocess.run(pandoc_args, check=True, capture_output=True)
         subprocess.run(pdflatex_args, check=True, capture_output=True)
     except subprocess.CalledProcessError as e:
+        # TODO: doesn't seem to always work as expected; only pops up when saving
+        # file and re-opening, not when you edit a file to be incorrect
         if click.get_current_context(silent=True):
             errmsg = e.stderr.decode()
             send_notification(errmsg)

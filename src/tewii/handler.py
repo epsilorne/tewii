@@ -8,8 +8,8 @@ from watchdog.events import (
     PatternMatchingEventHandler,
 )
 
+from tewii.conversion import convert_source_files
 from tewii.project import Project
-from tewii.workers import convert_source_files
 
 
 class ProjectHandler(PatternMatchingEventHandler):

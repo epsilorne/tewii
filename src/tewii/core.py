@@ -9,10 +9,10 @@ from textwrap import dedent
 import psutil
 from watchdog.observers import Observer
 
-from tewii.monitor import ProjectHandler
+from tewii.conversion import open_pdf_previewer
+from tewii.handler import ProjectHandler
 from tewii.project import Project
 from tewii.util import PANDOC, PDFLATEX
-from tewii.workers import open_pdf_previewer
 
 
 def check_deps() -> bool:
