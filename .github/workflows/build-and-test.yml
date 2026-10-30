@@ -25,6 +25,8 @@ jobs:
           fake_pandoc="/tmp/fakebin/pandoc"
           fake_pdflatex="/tmp/fakebin/pdflatex"
 
+          mkdir -p /tmp/fakebin
+
           echo '#!/bin/bash' > $fake_pandoc
           echo 'exit 0' >> $fake_pandoc
           chmod +x $fake_pandoc
