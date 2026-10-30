@@ -4,13 +4,11 @@ import sys
 from pathlib import Path
 
 import click
-import pypandoc
 from notifypy import Notify
 from watchdog.events import PatternMatchingEventHandler
 
 from tewii.project import Project
-
-PDFLATEX: str = "pdflatex"
+from tewii.util import PANDOC, PDFLATEX
 
 
 def send_notification(message: str) -> None:
@@ -67,32 +65,31 @@ class SourceFileMonitor(PatternMatchingEventHandler):
         """
         tex_source_file = self.base_dir / f"{self.project.name}.tex"
 
-        # TODO: order of files is not preserved, maybe should just call pandoc
-        # directly instead of the wrapper?
-        try:
-            pypandoc.convert_file(
-                self.absolute_source_files,
-                "tex",
-                outputfile=tex_source_file,
-                extra_args=["--standalone"],
-            )
+        pandoc_args = (
+            [PANDOC]
+            + self.absolute_source_files
+            + [
+                "-o",
+                tex_source_file,
+                "--standalone",
+            ]
+        )
 
-            subprocess.run(
-                [
-                    PDFLATEX,
-                    # Ignore any errors in the output pdf
-                    "-interaction=nonstopmode",
-                    f"-output-directory={self.base_dir}",
-                    tex_source_file,
-                ],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-        except (RuntimeError, OSError) as e:
+        pdflatex_args = [
+            PDFLATEX,
+            "-interaction=nonstopmode",
+            f"-output-directory={self.base_dir}",
+            tex_source_file,
+        ]
+
+        try:
+            subprocess.run(pandoc_args, check=True, capture_output=True)
+            subprocess.run(pdflatex_args, check=True, capture_output=True)
+        except subprocess.CalledProcessError as e:
             if click.get_current_context(silent=True):
-                # TODO: find a way to summarise the error?
-                send_notification(str(e))
-                click.secho(f"Runtime Error: {e}", fg="red", file=sys.stderr)
+                errmsg = e.stderr.decode()
+                send_notification(errmsg)
+                click.secho(f"Runtime Error: {errmsg}", fg="red", file=sys.stderr)
 
     def __init__(self, project: Project, base_dir: Path) -> None:
         self.project = project

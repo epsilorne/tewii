@@ -8,10 +8,10 @@ from pathlib import Path
 from textwrap import dedent
 
 import psutil
-import pypandoc
 from watchdog.observers import Observer
 
 from tewii.project import Project
+from tewii.util import PANDOC, PDFLATEX
 from tewii.workers import SourceFileMonitor, open_pdf_previewer
 
 
@@ -25,11 +25,11 @@ def check_deps() -> bool:
         RuntimeError: If the required dependencies are not installed
     """
     try:
-        pypandoc.get_pandoc_version()
-        subprocess.run(["pdflatex", "--version"], stdout=subprocess.DEVNULL)
+        subprocess.run([PANDOC, "--version"], stdout=subprocess.DEVNULL, check=True)
+        subprocess.run([PDFLATEX, "--version"], stdout=subprocess.DEVNULL, check=True)
 
         return True
-    except OSError:
+    except OSError, subprocess.CalledProcessError:
         raise RuntimeError(
             "Required dependencies 'pandoc' and/or 'pdflatex' are not installed"
         )
