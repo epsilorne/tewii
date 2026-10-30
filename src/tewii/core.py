@@ -115,9 +115,8 @@ def edit_project(project_name: str) -> str:
     tewii_project_file = project_path / ".tewii.json"
 
     if tewii_project_file.exists():
-        check_deps()
-
         current_project = ProjectHandler(project_path)
+        check_deps()
 
         # Find the first existing file in the project's source files
         source_file = next(
