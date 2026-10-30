@@ -7,7 +7,7 @@ import click
 from notifypy import Notify
 
 from tewii.project import Project
-from tewii.util import PANDOC, PDFLATEX
+from tewii.util import OUTPUT_DIR, PANDOC, PDFLATEX
 
 
 def send_notification(message: str) -> None:
@@ -25,7 +25,7 @@ def open_pdf_previewer(project: Project, base_dir: Path) -> None:
         base_dir (Path): an ABSOLUTE path to the project directory, which
             is used to build a path to a .pdf
     """
-    pdf = base_dir.resolve() / f"{project.name}.pdf"
+    pdf = base_dir.resolve() / OUTPUT_DIR / f"{project.name}.pdf"
 
     match sys.platform:
         case "win32":
@@ -50,7 +50,7 @@ def convert_source_files(
         project (Project):
         absolute_source_files (list[Path]):
     """
-    tex_source_file = base_dir / f"{project.name}.tex"
+    tex_source_file = base_dir / OUTPUT_DIR / f"{project.name}.tex"
 
     pandoc_args = (
         [PANDOC]
@@ -65,7 +65,7 @@ def convert_source_files(
     pdflatex_args = [
         PDFLATEX,
         "-interaction=nonstopmode",
-        f"-output-directory={base_dir}",
+        f"-output-directory={base_dir / OUTPUT_DIR}",
         tex_source_file,
     ]
 

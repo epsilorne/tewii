@@ -74,6 +74,8 @@ class ProjectHandler(PatternMatchingEventHandler):
             ignore_directories=False,
         )
 
+        convert_source_files(self.base_dir, self.project, self.absolute_source_files)
+
     def on_modified(self, event: DirModifiedEvent | FileModifiedEvent) -> None:
         """Handle a modified file event."""
         modified_file = Path(os.fsdecode(event.src_path))
