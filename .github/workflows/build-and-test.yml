@@ -25,13 +25,13 @@ jobs:
           fake_pandoc="/usr/bin/pandoc"
           fake_pdflatex="/usr/bin/pdflatex"
 
-          echo '#!/bin/bash' > $fake_pandoc
-          echo 'exit 0' >> $fake_pandoc
-          chmod +x $fake_pandoc
+          sudo echo '#!/bin/bash' > $fake_pandoc
+          sudo echo 'exit 0' >> $fake_pandoc
+          sudo chmod +x $fake_pandoc
 
-          echo '#!/bin/bash' > $fake_pdflatex
-          echo 'exit 0' >> $fake_pdflatex
-          chmod +x $fake_pdflatex
+          sudo echo '#!/bin/bash' > $fake_pdflatex
+          sudo echo 'exit 0' >> $fake_pdflatex
+          sudo chmod +x $fake_pdflatex
 
       - name: Run tests
         run: uv run pytest tests
