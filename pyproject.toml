@@ -1,6 +1,6 @@
 [project]
 name = "tewii"
-version = "0.1.0"
+version = "0.2.0"
 description = "Seamless Markdown to LaTeX + PDF Convertor"
 readme = "README.md"
 authors = [
@@ -19,7 +19,7 @@ license-files = ["LICENSE"]
 tewii = "tewii.cli:main"
 
 [build-system]
-requires = ["uv_build>=0.12.23,<0.13.0"]
+requires = ["uv_build>=0.12.23"]
 build-backend = "uv_build"
 
 [dependency-groups]
