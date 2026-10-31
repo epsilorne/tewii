@@ -1,6 +1,6 @@
 [project]
 name = "tewii"
-version = "0.1.0"
+version = "0.2.0"
 description = "Seamless Markdown to LaTeX + PDF Convertor"
 readme = "README.md"
 authors = [
@@ -9,8 +9,8 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     "click>=8.5.0",
+    "notify-py>=0.3.43",
     "psutil>=7.2.2",
-    "pypandoc>=1.17",
     "watchdog>=6.0.0",
 ]
 license-files = ["LICENSE"]
@@ -19,7 +19,7 @@ license-files = ["LICENSE"]
 tewii = "tewii.cli:main"
 
 [build-system]
-requires = ["uv_build>=0.12.23,<0.13.0"]
+requires = ["uv_build>=0.12.23"]
 build-backend = "uv_build"
 
 [dependency-groups]

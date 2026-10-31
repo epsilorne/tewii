@@ -5,8 +5,6 @@
 
 Tewii is a Pandoc wrapper surrounding your default text editor, allowing you to seamlessly create LaTeX documents, rendered as a PDF, all from simpler Markdown.
 
-More doco TBA.
-
 ## Features
 
 - Use your default text editor to edit Markdown files and see a rendered PDF from your default PDF viewer
@@ -22,12 +20,12 @@ You can download from PyPI:
 $ python -m pip install tewii
 ```
 
-Alternatively, you can build from source using e.g. [UV](https://github.com/astral-sh/uv):
+Alternatively, you can install from source, using e.g. [UV](https://github.com/astral-sh/uv):
 
 ```bash
 $ git clone https://github.com/epsilorne/tewii.git
 $ cd tewii
-$ uv install .
+$ uv tool install .
 ```
 
 ## Usage

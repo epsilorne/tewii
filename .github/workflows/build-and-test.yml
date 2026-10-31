@@ -18,5 +18,24 @@ jobs:
       - name: Install the project
         run: uv sync --locked --all-extras --dev
 
+        # The tests already check if pandoc/pdflatex aren't installed, but we need
+        # to mock them so the ProjectHandler can be constructed for other tests
+      - name: Create mock pandoc and pdflatex
+        run: |
+          fake_pandoc="/tmp/fakebin/pandoc"
+          fake_pdflatex="/tmp/fakebin/pdflatex"
+
+          mkdir -p /tmp/fakebin
+
+          echo '#!/bin/bash' > $fake_pandoc
+          echo 'exit 0' >> $fake_pandoc
+          chmod +x $fake_pandoc
+
+          echo '#!/bin/bash' > $fake_pdflatex
+          echo 'exit 0' >> $fake_pdflatex
+          chmod +x $fake_pdflatex
+
+          echo "/tmp/fakebin/" >> $GITHUB_PATH
+
       - name: Run tests
         run: uv run pytest tests

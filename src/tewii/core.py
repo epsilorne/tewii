@@ -3,16 +3,16 @@ import os
 import subprocess
 import sys
 from datetime import date
-from json import JSONDecodeError
 from pathlib import Path
 from textwrap import dedent
 
 import psutil
-import pypandoc
 from watchdog.observers import Observer
 
+from tewii.conversion import open_pdf_previewer
+from tewii.handler import ProjectHandler
 from tewii.project import Project
-from tewii.workers import SourceFileMonitor, open_pdf_previewer
+from tewii.util import PANDOC, PDFLATEX
 
 
 def check_deps() -> bool:
@@ -25,11 +25,11 @@ def check_deps() -> bool:
         RuntimeError: If the required dependencies are not installed
     """
     try:
-        pypandoc.get_pandoc_version()
-        subprocess.run(["pdflatex", "--version"], stdout=subprocess.DEVNULL)
+        subprocess.run([PANDOC, "--version"], stdout=subprocess.DEVNULL, check=True)
+        subprocess.run([PDFLATEX, "--version"], stdout=subprocess.DEVNULL, check=True)
 
         return True
-    except OSError:
+    except OSError, subprocess.CalledProcessError:
         raise RuntimeError(
             "Required dependencies 'pandoc' and/or 'pdflatex' are not installed"
         )
@@ -115,78 +115,61 @@ def edit_project(project_name: str) -> str:
     tewii_project_file = project_path / ".tewii.json"
 
     if tewii_project_file.exists():
-        current_project = None
+        current_project = ProjectHandler(project_path)
+        check_deps()
 
-        with open(tewii_project_file, "r") as file:
-            try:
-                current_project = Project.from_json(file.read())
-            except TypeError:
-                raise RuntimeError(
-                    f"{tewii_project_file} is an invalid Tewii project file"
-                )
-            except JSONDecodeError:
-                raise RuntimeError(f"{tewii_project_file} contains malformed JSON")
-
-            # Find the first existing file in current_project.source_files
-            source_file = next(
-                (
-                    (project_path / file)
-                    for file in current_project.source_files
-                    if (project_path / file).exists()
-                ),
-                None,
+        # Find the first existing file in the project's source files
+        source_file = next(
+            (
+                (project_path / file)
+                for file in current_project.absolute_source_files
+                if (project_path / file).exists()
+            ),
+            None,
+        )
+        if source_file is None:
+            raise RuntimeError(
+                f"Could not find any existing source files to edit. Check {tewii_project_file} and try again"
             )
-            if source_file is None:
-                raise RuntimeError(
-                    f"Could not find any existing source files to edit. Check {tewii_project_file} and try again"
-                )
-            check_deps()
 
-            # Use a 'watchdog' to begin monitoring project source files for any
-            # changes (which'll trigger Pandoc + Pdflatex to render)
-            file_monitor = SourceFileMonitor(current_project, project_path)
-            observer = Observer()
-            observer.schedule(file_monitor, str(project_path), recursive=False)
-            observer.start()
+        observer = Observer()
+        observer.schedule(current_project, str(project_path), recursive=True)
+        observer.start()
 
-            # TODO: have another watchdog to monitor the project file, and if it
-            # updates, update/recreate the current_project accordingly
+        open_pdf_previewer(current_project.project, project_path)
 
-            # Also create a background process to handle the pdf preview
-            open_pdf_previewer(current_project, project_path)
+        # Try EDITOR env var (for Unix), otherwise fallback to OS-defaults
+        try:
+            if editor := os.environ["EDITOR"]:
+                subprocess.run([editor, source_file], cwd=project_path, check=True)
+            else:
+                match sys.platform:
+                    case "win32":
+                        os.startfile(source_file)
+                    case "darwin":
+                        subprocess.run(
+                            ["open", "-t", source_file],
+                            stdout=subprocess.DEVNULL,
+                            check=True,
+                        )
+                    case _:
+                        subprocess.run(
+                            ["xdg-open", source_file],
+                            stdout=subprocess.DEVNULL,
+                            check=True,
+                        )
+        except Exception:
+            raise RuntimeError("Unable to open an editor")
+        finally:
+            observer.stop()
+            observer.join()
 
-            # Try EDITOR env var (for Unix), otherwise fallback to OS-defaults
-            try:
-                if editor := os.environ["EDITOR"]:
-                    subprocess.run([editor, source_file], cwd=project_path, check=True)
-                else:
-                    match sys.platform:
-                        case "win32":
-                            os.startfile(source_file)
-                        case "darwin":
-                            subprocess.run(
-                                ["open", "-t", source_file],
-                                stdout=subprocess.DEVNULL,
-                                check=True,
-                            )
-                        case _:
-                            subprocess.run(
-                                ["xdg-open", source_file],
-                                stdout=subprocess.DEVNULL,
-                                check=True,
-                            )
-            except Exception:
-                raise RuntimeError("Unable to open an editor")
-            finally:
-                observer.stop()
-                observer.join()
+            # Kill all child processes (including the .pdf viewer processes
+            # created by open_pdf()
+            for child in psutil.Process(os.getpid()).children(recursive=True):
+                child.kill()
 
-                # Kill all child processes (including the .pdf viewer processes
-                # created by open_pdf()
-                for child in psutil.Process(os.getpid()).children(recursive=True):
-                    child.kill()
-
-            # TODO: git handling here
-            return f"Saved changes to {project_path}"
+        # TODO: git handling here
+        return f"Saved changes to {project_path}"
     else:
         return f"A Tewii project does not exist at {project_path}"
